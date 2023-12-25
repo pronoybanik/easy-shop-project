@@ -12,7 +12,7 @@ export const metadata = {
 
 const RootLayout = ({ children }) => {
   return (
-    <html lang="en">
+    <html className='container w-[1400px] mx-auto' lang="en">
       <body className={inter.className}>
         <NavBar />
         {children}
