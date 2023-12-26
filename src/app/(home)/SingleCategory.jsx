@@ -13,7 +13,7 @@ const SingleCategory = ({ category }) => {
             alt={name}
             width={300}
             height={300}
-            className="max-h-[150px] sm:max-h-[250px] xl:max-h-[300px] object-cover w-auto"
+            className="lg:h-[300px] h-80 object-cover w-auto"
           />
         </figure>
         <div className="card-body flex-grow-0">
