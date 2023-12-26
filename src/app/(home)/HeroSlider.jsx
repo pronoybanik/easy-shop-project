@@ -8,8 +8,6 @@ import SingleHeroSlider from "./SingleHeroSlider";
 import "swiper/css/bundle";
 
 
-
-
 const HeroSlider = () => {
   return (
     <section className="main-slider">
@@ -19,6 +17,7 @@ const HeroSlider = () => {
         navigation
         effect="fade"
         autoplay
+        zoom
         modules={[Navigation, EffectFade, Autoplay]}
       >
         {mainSlider.map((slider) => (
