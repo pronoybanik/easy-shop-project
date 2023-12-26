@@ -3,7 +3,9 @@
 
 import GoogleLogin from '@/components/GoogleLogin';
 import useAuth from '@/hooks/useAuth';
+import createJwt from '@/utils/createJwt';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -20,6 +22,9 @@ const SingUpFrom = () => {
     } = useForm();
 
     const { createUser, profileUpdate } = useAuth();
+    const search = useSearchParams();
+    const from = search.get("redirectUrl") || "/"
+    const { replace } = useRouter();
 
     const uploadImage = async (event) => {
         const formData = new FormData();
@@ -51,12 +56,14 @@ const SingUpFrom = () => {
         const toastId = toast.loading("Loading...");
         try {
             await createUser(email, password)
+            await createJwt({ email })
             await profileUpdate({
                 displayName: name,
                 photoURL: photo,
             });
             toast.dismiss(toastId);
             toast.success("User signed in successfully");
+            replace(from)
         } catch (error) {
             toast.dismiss(toastId);
             toast.error(error.message || "User not signed in");
@@ -170,7 +177,7 @@ const SingUpFrom = () => {
                 </Link>
             </p>
             <div className="divider mt-5">OR</div>
-            <GoogleLogin />
+            <GoogleLogin from={from} />
         </form>
     );
 };

@@ -3,7 +3,9 @@
 
 import GoogleLogin from '@/components/GoogleLogin';
 import useAuth from '@/hooks/useAuth';
+import createJwt from '@/utils/createJwt';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
@@ -15,14 +17,20 @@ const LoginFrom = () => {
         formState: { errors },
     } = useForm();
     const { signIn } = useAuth();
+    const search = useSearchParams();
+    console.log("search", search.get("redirectUrl"));
+    const from = search.get("redirectUrl") || "/";
+    const { replace } = useRouter();
 
     const onSubmit = async (data) => {
         const { email, password } = data;
         const toastId = toast.loading("Loading...")
         try {
             await signIn(email, password)
+            await createJwt({ email })
             toast.dismiss(toastId)
             toast.success("user sing in  Successfully")
+            replace(from)
         } catch (error) {
             toast.dismiss(toastId)
             toast.error(error.message || "User Not sing in")
@@ -90,7 +98,7 @@ const LoginFrom = () => {
                 </Link>
             </p>
             <div className="divider mt-5">OR</div>
-            <GoogleLogin />
+            <GoogleLogin from={from} />
         </form>
     );
 };

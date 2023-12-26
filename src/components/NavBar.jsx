@@ -7,17 +7,37 @@ import React, { useState } from "react";
 import NavBarLink from "./NavBarLink";
 import useAuth from "@/hooks/useAuth";
 import toast from "react-hot-toast";
+import { usePathname, useRouter } from "next/navigation";
 
 const NavBar = () => {
   const [navToggle, setNavToggle] = useState(false);
   const { user, logout } = useAuth();
   const { uid, displayName, photoURL } = user || {};
+  const path = usePathname();
+  const { replace } = useRouter();
 
   const navData = uid ? afterLoginNavData : beforeLoginNavData;
 
-  const handleLogout = () => {
-    logout();
-    toast.success("successFully LogOut");
+  const handleLogout = async () => {
+    const toastId = toast.loading("Loading...");
+    try {
+      await logout();
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+      });
+      await res.json();
+      if (path.includes("/dashboard") || path.includes("/blogs")) {
+        replace(`/login?redirectUrl=${path}`);
+      }
+      toast.dismiss(toastId);
+      toast.success("Successfully logout!");
+      // startTransition(() => {
+      //   refresh();
+      // });
+    } catch (error) {
+      toast.error("Successfully not logout!");
+      toast.dismiss(toastId);
+    }
   };
 
   return (
