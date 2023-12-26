@@ -6,7 +6,7 @@ import useAuth from '@/hooks/useAuth';
 import createJwt from '@/utils/createJwt';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React from 'react';
+import React, { startTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 
@@ -18,9 +18,8 @@ const LoginFrom = () => {
     } = useForm();
     const { signIn } = useAuth();
     const search = useSearchParams();
-    console.log("search", search.get("redirectUrl"));
     const from = search.get("redirectUrl") || "/";
-    const { replace } = useRouter();
+    const { replace, refresh } = useRouter();
 
     const onSubmit = async (data) => {
         const { email, password } = data;
@@ -28,9 +27,12 @@ const LoginFrom = () => {
         try {
             await signIn(email, password)
             await createJwt({ email })
-            toast.dismiss(toastId)
-            toast.success("user sing in  Successfully")
-            replace(from)
+            startTransition(() => {
+                refresh();
+                replace(from);
+                toast.dismiss(toastId);
+                toast.success("User signed in successfully");
+            });
         } catch (error) {
             toast.dismiss(toastId)
             toast.error(error.message || "User Not sing in")
