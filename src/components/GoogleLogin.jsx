@@ -1,11 +1,27 @@
+import useAuth from "@/hooks/useAuth";
 import React from "react";
+import toast from "react-hot-toast";
 import { FcGoogle } from "react-icons/fc";
 
 const GoogleLogin = () => {
+  const { googleLogin } = useAuth();
+
+  const handleGoogleLogin = async () => {
+    const toastId = toast.loading("Loading...");
+    try {
+      const { user } = await googleLogin();
+      toast.dismiss(toastId);
+      toast.success("User signed in successfully");
+    } catch (error) {
+      toast.dismiss(toastId);
+      toast.error(error.message || "User not signed in");
+    }
+  };
+
   return (
     <>
       <button
-        // onClick={handleGoogleLogin}
+        onClick={handleGoogleLogin}
         type="button"
         className="btn btn-primary mt-5 mx-auto"
       >

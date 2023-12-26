@@ -2,9 +2,11 @@
 "use client"
 
 import GoogleLogin from '@/components/GoogleLogin';
+import useAuth from '@/hooks/useAuth';
 import Link from 'next/link';
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
 
 
 
@@ -13,11 +15,53 @@ const SingUpFrom = () => {
         register,
         handleSubmit,
         formState: { errors },
+        getValues,
+        setValue,
     } = useForm();
 
-    const onSubmit = () => {
-        console.log("click");
-    }
+    const { createUser, profileUpdate } = useAuth();
+
+    const uploadImage = async (event) => {
+        const formData = new FormData();
+        if (!event.target.files[0]) return;
+        formData.append("image", event.target.files[0]);
+        const toastId = toast.loading("Image uploading...");
+        try {
+            const res = await fetch(
+                `https://api.imgbb.com/1/upload?key=${process.env.NEXT_PUBLIC_IMGBB_API_KEY}`,
+                {
+                    method: "POST",
+                    body: formData,
+                }
+            );
+            if (!res.ok) throw new Error("Failed to upload image");
+
+            const data = await res.json();
+            toast.dismiss(toastId);
+            toast.success("Image uploaded successfully!");
+            setValue("photo", data.data.url);
+        } catch (error) {
+            toast.error("Image not uploaded!");
+            toast.dismiss(toastId);
+        }
+    };
+
+    const onSubmit = async (data, event) => {
+        const { name, email, password, photo } = data;
+        const toastId = toast.loading("Loading...");
+        try {
+            await createUser(email, password)
+            await profileUpdate({
+                displayName: name,
+                photoURL: photo,
+            });
+            toast.dismiss(toastId);
+            toast.success("User signed in successfully");
+        } catch (error) {
+            toast.dismiss(toastId);
+            toast.error(error.message || "User not signed in");
+        }
+    };
     return (
         <form onSubmit={handleSubmit(onSubmit)} className="card-body">
             <div className="form-control">
@@ -110,7 +154,7 @@ const SingUpFrom = () => {
                 <input
                     type="file"
                     id="photo"
-                    // onChange={uploadImage}
+                    onChange={uploadImage}
                     className="file-input file-input-bordered file-input-primary w-full"
                 />
             </div>

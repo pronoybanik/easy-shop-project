@@ -2,9 +2,11 @@
 "use client"
 
 import GoogleLogin from '@/components/GoogleLogin';
+import useAuth from '@/hooks/useAuth';
 import Link from 'next/link';
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import toast from 'react-hot-toast';
 
 const LoginFrom = () => {
     const {
@@ -12,9 +14,20 @@ const LoginFrom = () => {
         handleSubmit,
         formState: { errors },
     } = useForm();
+    const { signIn } = useAuth();
 
-    const onSubmit = () => {
-        console.log("click");
+    const onSubmit = async (data) => {
+        const { email, password } = data;
+        const toastId = toast.loading("Loading...")
+        try {
+            await signIn(email, password)
+            toast.dismiss(toastId)
+            toast.success("user sing in  Successfully")
+        } catch (error) {
+            toast.dismiss(toastId)
+            toast.error(error.message || "User Not sing in")
+        }
+
     }
 
     return (
